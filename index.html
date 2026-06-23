@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;800&display=swap');
 
         :root {
             --paper: #fbf6ed;
@@ -49,6 +49,14 @@
 
         ::-webkit-scrollbar {
             display: none;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         .safe-bottom {
@@ -156,6 +164,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 220ms ease;
+            background-color: rgba(32, 21, 15, 0.48);
         }
 
         .sheet-backdrop.open {
@@ -199,6 +208,16 @@
 
         <main class="px-4 pb-32 pt-4">
             <section id="view-today" class="tab-page active space-y-4">
+                
+                <!-- 🚀 动态阶段选择卡 (Stage Switcher) -->
+                <div class="premium-card rounded-[26px] p-4">
+                    <p class="text-[10px] font-extrabold tracking-[0.16em] text-[#9a6840] mb-2 uppercase">CHOOSE STAGE</p>
+                    <div id="stage-tabs" class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        <!-- Dynamic Stage buttons inject here -->
+                    </div>
+                </div>
+
+                <!-- 🌟 核心信息展示卡 -->
                 <div class="dark-card overflow-hidden rounded-[30px] p-5">
                     <div class="flex items-start justify-between gap-4">
                         <div class="min-w-0">
@@ -229,11 +248,12 @@
                         <div id="progress-bar-fill" class="h-full rounded-full bg-[#e8b56f] transition-all duration-500" style="width: 0%"></div>
                     </div>
                     <div class="mt-4 flex gap-2">
-                        <button onclick="openTaskSheet(getCurrentDayTaskId())" class="touch-button flex-1 rounded-2xl bg-[#fff7ea] text-sm font-extrabold text-[#6f3d22] micro-shadow">今日任务</button>
+                        <button onclick="openTaskSheet(getFirstUncompletedTaskId())" class="touch-button flex-1 rounded-2xl bg-[#fff7ea] text-sm font-extrabold text-[#6f3d22] micro-shadow">今日任务</button>
                         <button onclick="switchTab('review')" class="touch-button w-24 rounded-2xl bg-[#7a4528] text-sm font-extrabold text-white shadow-lg shadow-[#7a4528]/20">复盘</button>
                     </div>
                 </div>
 
+                <!-- 🏆 动态学习路线/工具展示 -->
                 <div class="premium-card rounded-[26px] p-4">
                     <div class="flex items-center justify-between gap-3">
                         <div>
@@ -242,29 +262,27 @@
                         </div>
                         <span class="rounded-full bg-[#fff1df] px-3 py-1 text-[10px] font-extrabold text-[#9a6840]" id="time-budget-info">约 95 分钟</span>
                     </div>
-                    <div class="mt-3 grid gap-2">
-                        <div class="rounded-[18px] bg-[#fffaf2] p-3 micro-shadow">
-                            <div class="flex items-center justify-between gap-2">
-                                <p class="text-sm font-extrabold text-[#2f2118]">新概念英语</p>
-                                <span class="rounded-full bg-[#f3e3c9] px-2 py-1 text-[10px] font-extrabold text-[#7a4528]">输入</span>
-                            </div>
-                            <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">跟读、精听、纠音，负责把英语输入做扎实。</p>
-                        </div>
-                        <div class="rounded-[18px] bg-[#fffaf2] p-3 micro-shadow">
-                            <div class="flex items-center justify-between gap-2">
-                                <p class="text-sm font-extrabold text-[#2f2118]">墨墨背单词</p>
-                                <span class="rounded-full bg-[#f3e3c9] px-2 py-1 text-[10px] font-extrabold text-[#7a4528]">巩固</span>
-                            </div>
-                            <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">维持高频复现，把记住的单词稳稳留住。</p>
-                        </div>
+                    <div id="app-toolbox" class="mt-3 grid gap-2">
+                        <!-- Dynamic Tool Details will be rendered here -->
                     </div>
                 </div>
 
+                <!-- 🎯 动态任务清单 -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between px-1">
+                        <h3 class="text-xs font-extrabold tracking-wider text-[#9a6840] uppercase">今日功坚行动（计时防作弊）</h3>
+                    </div>
+                    <div id="checklist-container" class="space-y-3">
+                        <!-- Dynamic Task Cards Rendered here -->
+                    </div>
+                </div>
+
+                <!-- ⏱️ 全局快捷番茄钟卡片 -->
                 <div class="premium-card rounded-[26px] p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <h3 class="text-base font-extrabold text-[#2f2118]">今日任务入口</h3>
-                            <p id="timer-status-text" class="mt-1 text-xs leading-relaxed text-[#8c705b]">点开任务抽屉，先计时，再打卡。</p>
+                            <h3 class="text-base font-extrabold text-[#2f2118]">便捷专注计时</h3>
+                            <p id="timer-status-text" class="mt-1 text-xs leading-relaxed text-[#8c705b]">点击上方行动卡片，开始专注并打卡。</p>
                         </div>
                         <button onclick="requestNotificationPermission()" id="notification-btn" class="touch-button rounded-2xl bg-white px-3 text-[11px] font-extrabold text-[#7a4528] micro-shadow">通知</button>
                     </div>
@@ -277,26 +295,29 @@
                         </div>
                         <div class="min-w-0 flex-1 space-y-2">
                             <p class="truncate text-sm font-extrabold text-[#2f2118]" id="timer-current-label">尚未开始计时</p>
-                            <p class="text-xs font-semibold leading-relaxed text-[#8c705b]">今天先完成一个任务，再去看别的内容。</p>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button onclick="startCustomTimer(15)" class="touch-button rounded-2xl bg-[#fffaf2] text-xs font-extrabold text-[#6f3d22] micro-shadow">15分</button>
-                                <button onclick="startCustomTimer(25)" class="touch-button rounded-2xl bg-[#fffaf2] text-xs font-extrabold text-[#6f3d22] micro-shadow">25分</button>
-                                <button onclick="startCustomTimer(45)" class="touch-button rounded-2xl bg-[#fffaf2] text-xs font-extrabold text-[#6f3d22] micro-shadow">45分</button>
+                            <div class="h-1.5 overflow-hidden rounded-full bg-[#ead6bd] w-full">
+                                <div id="timer-progress-fill" class="h-full rounded-full bg-[#a35f35] transition-all" style="width: 0%"></div>
+                            </div>
+                            <div class="grid grid-cols-4 gap-1.5">
+                                <button onclick="startCustomTimer(15)" class="touch-button rounded-xl bg-[#fffaf2] text-[11px] font-extrabold text-[#6f3d22] micro-shadow">15分</button>
+                                <button onclick="startCustomTimer(25)" class="touch-button rounded-xl bg-[#fffaf2] text-[11px] font-extrabold text-[#6f3d22] micro-shadow">25分</button>
+                                <button onclick="startCustomTimer(45)" class="touch-button rounded-xl bg-[#fffaf2] text-[11px] font-extrabold text-[#6f3d22] micro-shadow">45分</button>
+                                <button onclick="toggleTimerPause()" id="timer-pause-btn" class="touch-button rounded-xl bg-[#fffaf2] text-[11px] font-extrabold text-[#7a4528] micro-shadow">暂停</button>
+                            </div>
+                            <div class="hidden">
+                                <input type="number" id="custom-timer-minutes" value="25">
+                                <button id="timer-cancel-btn">取消</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="openTaskSheet(getCurrentDayTaskId())" class="task-card app-card-press premium-card w-full rounded-[26px] p-4 text-left">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <p class="text-[11px] font-extrabold tracking-[0.16em] text-[#9a6840]">TODAY TASK</p>
-                            <h3 class="mt-1 text-base font-extrabold text-[#2f2118]" id="today-task-title">今日任务</h3>
-                            <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]" id="today-task-desc">先开始任务计时，完成后才能打卡。</p>
-                        </div>
-                        <span id="today-task-pill" class="shrink-0 rounded-full bg-[#fff1df] px-3 py-1 text-[10px] font-extrabold text-[#9a6840]">打开抽屉</span>
-                    </div>
-                </button>
+                <!-- ✍️ 每日复盘日记卡片 -->
+                <div class="premium-card rounded-[26px] p-4">
+                    <h3 class="text-base font-extrabold text-[#2f2118] flex items-center">✍️ 今日复盘笔记</h3>
+                    <p class="text-xs text-[#8c705b] mt-0.5 mb-2">记下新概念精听错词、或墨墨背词脑补场景，本地自动同步。</p>
+                    <textarea id="daily-note-input" oninput="saveDailyNote()" class="mt-2 w-full h-24 p-3 text-xs bg-[#fffaf2] border border-[#ead6bd] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#a35f35] text-[#2f2118] resize-none placeholder-[#8c705b]/60" placeholder="记录你今天的英语学习心得、复盘收获或发音盲点..."></textarea>
+                </div>
             </section>
 
             <section id="view-review" class="tab-page space-y-5">
@@ -379,22 +400,22 @@
 
         <nav class="safe-bottom glass-bar fixed bottom-0 left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2 border-t px-4 pt-2">
             <div class="grid h-16 grid-cols-4 gap-1 rounded-[24px] bg-white/35 p-1 shadow-inner">
-                <button onclick="switchTab('today')" class="native-tab nav-item flex flex-col items-center justify-center rounded-[20px] text-[#7a4528]" id="nav-today">
+                <button id="nav-today" onclick="switchTab('today')" class="native-tab nav-item flex flex-col items-center justify-center rounded-[20px] text-[#7a4528]">
                     <span class="text-xl">✓</span><span class="mt-0.5 text-[10px] font-extrabold">今日</span>
                 </button>
-                <button onclick="switchTab('review')" class="native-tab nav-item flex flex-col items-center justify-center rounded-[20px] text-[#9a8a78]" id="nav-review">
+                <button id="nav-review" onclick="switchTab('review')" class="native-tab nav-item flex flex-col items-center justify-center rounded-[20px] text-[#9a8a78]">
                     <span class="text-xl">◷</span><span class="mt-0.5 text-[10px] font-extrabold">复盘</span>
                 </button>
-                <button onclick="switchTab('achievements')" class="native-tab nav-item flex flex-col items-center justify-center rounded-[20px] text-[#9a8a78]" id="nav-achievements">
+                <button id="nav-achievements" onclick="switchTab('achievements')" class="native-tab nav-item flex flex-col items-center justify-center rounded-[20px] text-[#9a8a78]">
                     <span class="text-xl">◇</span><span class="mt-0.5 text-[10px] font-extrabold">成就</span>
                 </button>
-                <button onclick="switchTab('settings')" class="native-tab nav-item flex flex-col items-center justify-center rounded-[20px] text-[#9a8a78]" id="nav-settings">
+                <button id="nav-settings" onclick="switchTab('settings')" class="native-tab nav-item flex flex-col items-center justify-center rounded-[20px] text-[#9a8a78]">
                     <span class="text-xl">⚙</span><span class="mt-0.5 text-[10px] font-extrabold">设置</span>
                 </button>
             </div>
         </nav>
 
-        <div id="task-sheet-view" onclick="closeTaskSheet()" class="sheet-backdrop fixed inset-0 z-[55] flex items-end justify-center bg-[#20150f]/48">
+        <div id="task-sheet-view" onclick="closeTaskSheet()" class="sheet-backdrop fixed inset-0 z-[55] flex items-end justify-center">
             <div onclick="event.stopPropagation()" class="bottom-sheet safe-bottom w-full max-w-[430px] rounded-t-[34px] border border-white/45 bg-[#fff8ec] px-5 pb-5 pt-3 shadow-2xl shadow-black/25">
                 <div class="mx-auto h-1.5 w-12 rounded-full bg-[#d8bea0]"></div>
                 <div class="mt-4 flex items-start justify-between gap-4">
@@ -448,65 +469,65 @@
     </div>
 
     <script>
+        // 核心关卡重塑：以《新概念英语》AI版 与《墨墨背单词》高能咬合的每日打卡路线图
         const appPhases = [
             {
                 id: "phase0",
                 name: "研0暑假",
-                title: "黄金起跑期",
+                title: "语音发音与口语骨架奠定期",
                 timeBudget: "95分钟",
                 tasks: [
-                    { id: "p0_t1", title: "晨间：纠正单音发音", duration: "20分钟", desc: "赖世雄音标，发音录音对比", key: "音标" },
-                    { id: "p0_t2", title: "下午：连读弱读规律", duration: "30分钟", desc: "学习连读吞音，用 ESL Pod 跟读", key: "连读" },
-                    { id: "p0_t3", title: "晚间：画面背词+影子跟读", duration: "45分钟", desc: "闭眼背词脑补画面 + 听觉影子跟读", key: "影子跟读" }
+                    { id: "p0_t1", title: "晨读：新概念一（AI版）逐字纠音", duration: "20分钟", desc: "利用新概念一短小的日常对话进行AI纠音。死磕元音爆破、连读弱读吞音。不要放过任何一个发音细节波形图。", key: "音标跟读" },
+                    { id: "p0_t2", title: "下午：墨墨背单词（高考/四级核心词）", duration: "30分钟", desc: "在墨墨里遮挡中文。听发音，强迫脑子里直接反射出单词对应的场景画面，绝对不能在脑海里翻译成中文中介字眼。", key: "墨墨背词" },
+                    { id: "p0_t3", title: "晚间：新概念一背诵与AI拟真对话", duration: "45" + "分钟", desc: "挑选课文背诵。随后在AI助手上模拟课文中的日常交际场景。打通“中译英”的思维卡顿，提高口语反应速度。", key: "口语实战" }
                 ],
                 tools: [
-                    { name: "赖世雄美语音标", desc: "发音入门首选" },
-                    { name: "ESL Pod 播客", desc: "中慢速听力训练建立英语脑" },
-                    { name: "不背单词 APP", desc: "配合真实例句联想画面的背词利器" }
+                    { name: "新概念第一册 (AI版)", desc: "从头打底！建立发音底座，死磕元音爆破、连读弱读音节。" },
+                    { name: "墨墨背单词 (高考/四级词库)", desc: "隐藏中文，强迫听发音直接映射脑中图像，戒掉大脑“翻译商”机制。" }
                 ]
             },
             {
                 id: "phase1",
                 name: "研一上",
-                title: "六级冲刺期",
+                title: "六级攻坚与长难句重塑期",
                 timeBudget: "95分钟",
                 tasks: [
-                    { id: "p1_t1", title: "晨间/通勤：泛听磨耳朵", duration: "20分钟", desc: "强迫大脑只抓关键词，戒掉脑中翻译", key: "泛听" },
-                    { id: "p1_t2", title: "下午/碎片：六级核心词", duration: "15分钟", desc: "设置听音识义，消除认识但听不懂的词", key: "听音" },
-                    { id: "p1_t3", title: "晚间：真题逐句听写", duration: "60分钟", desc: "听一句写一句，标注连读纠错再大声读5遍", key: "听写" }
+                    { id: "p1_t1", title: "晨读：新概念二课文盲听听写", duration: "20分钟", desc: "不看书本，盲听新概念二课文。听一句写一句，写不出来的部分反复听10遍，直至找出绊住你的弱读盲点。", key: "精听听写" },
+                    { id: "p1_t2", title: "下午：墨墨背单词（六级核心词库）", duration: "15分钟", desc: "精攻六级大纲词。在墨墨里开启纯听音模式和拼写验证模式，确保听得清、写得准。", key: "六级词库" },
+                    { id: "p1_t3", title: "晚间：课文逻辑分析与脱稿口头复述", duration: "60" + "分钟", desc: "彻底搞懂课文语法结构。合上书，根据脑中脉络用自己的话口头复述课文故事。练习英文逻辑转换，摆脱中文母语干扰。", key: "句式复述" }
                 ],
                 tools: [
-                    { name: "每日英语听力 APP", desc: "支持单句循环、变速跟读" },
-                    { name: "巨微六级逐词精解", desc: "针对六级基础薄弱的真题解析" }
+                    { name: "新概念第二册 (AI精听版)", desc: "不看书盲写、听写课文，找出导致六级听力失分的“粘连音节”并突破。" },
+                    { name: "墨墨背单词 (六级词库)", desc: "关闭词义，主攻听音辨义。确保每一个核心高频词在听到声音的0.1秒内闪现。" }
                 ]
             },
             {
                 id: "phase2",
                 name: "研一下至研二",
-                title: "思维转换期",
+                title: "地道语料积累与表达转换期",
                 timeBudget: "90分钟",
                 tasks: [
-                    { id: "p2_t1", title: "晨间：纯英泛听（无字幕）", duration: "30分钟", desc: "第一遍裸听抓70%，第二遍看字幕补漏", key: "裸听" },
-                    { id: "p2_t2", title: "下午：语块本积累", duration: "15分钟", desc: "记文献和美剧里的完整地道词组", key: "语块" },
-                    { id: "p2_t3", title: "晚间：影子跟读+自言自语", duration: "45分钟", desc: "跟读美剧/TED，用英文描述当天实验/生活", key: "自说" }
+                    { id: "p2_t1", title: "晨读：新概念三高级句型脱稿影子跟读", duration: "30分钟", desc: "脱稿跟读第三册课文。模仿原声语气停顿与重读，彻底打磨口腔肌肉记忆。", key: "影子跟读" },
+                    { id: "p2_t2", title: "下午：墨墨背单词（学术文献/口语高频）", duration: "15分钟", desc: "脱离简单日常词。通过墨墨积累学术论文高频半学术词汇（如 formulate, variable ）以及高频地道语块。", key: "高频语块" },
+                    { id: "p2_t3", title: "晚间：美剧影子跟读与学术自言自语演练", duration: "45" + "分钟", desc: "跟读生活美剧（如摩登家庭）。随后用英文尝试口头描述当天科研进展和文献思路5分钟。", key: "学术自述" }
                 ],
                 tools: [
-                    { name: "All Ears English", desc: "地道日常沟通口语播客" },
-                    { name: "PotPlayer 播放器", desc: "电脑端双语字幕、逐句回放利器" }
+                    { name: "新概念第三册 (AI精磨版)", desc: "脱稿高频影子跟读，模仿原声腔调语流，培养高级句式的英文思维逻辑。" },
+                    { name: "墨墨背单词 (硕博学术/口语语块库)", desc: "积累高频半学术动词与地道短语搭配，彻底扫平阅读硕博专业文献障碍。" }
                 ]
             },
             {
                 id: "phase3",
                 name: "研三",
-                title: "实战飞跃期",
+                title: "流利实战与母语者无障碍输出期",
                 timeBudget: "80分钟",
                 tasks: [
-                    { id: "p3_t1", title: "碎片时间：学术深度听力", duration: "20分钟", desc: "听科技、科研访谈，学习母语者过渡词", key: "学术听" },
-                    { id: "p3_t2", title: "晚间/周末：实战口语对话", duration: "60分钟", desc: "每周2次，寻找真实语伴或外教交流", key: "实战口语" }
+                    { id: "p3_t1", category: "高阶泛听", title: "日间：前沿科技学术访谈裸听", duration: "20分钟", desc: "裸听科技名人、诺奖得主或科研学术巨头的视频播客（如 Lex Fridman）。重点分析和捕捉他们转换话题的高级衔接词汇。", key: "学术访听" },
+                    { id: "p3_t2", category: "口语突击", title: "晚间：AI 自由话题辩论 & 全球外教语伴连麦", duration: "60" + "分钟", desc: "每周2-3次。在语言交换平台上寻找母语外教，直接围绕科研、时事进行高频双向对抗输出。扔掉中文本能，让思维直达纯英文表达。", key: "自由辩论" }
                 ],
                 tools: [
-                    { name: "HelloTalk / Tandem", desc: "寻找全球语伴，实时交流" },
-                    { name: "Lex Fridman Podcast", desc: "高阶科研与科技深度访谈" }
+                    { name: "HelloTalk / Tandem 语言平台", desc: "寻找真实的母语语伴直接进行高频音视频通话，用实战消灭大脑翻译脑。" },
+                    { name: "科学学术原声播客 (如 Lex)", desc: "磨练高阶复杂长音频的听觉摄取，抓取高级学术转承短语套路。" }
                 ]
             }
         ];
@@ -549,6 +570,7 @@
 
         let activeTaskSheetId = "";
 
+        // 统一日期规范：格式为 YYYY-MM-DD
         function getTodayDateString() {
             return formatDateKey(new Date());
         }
@@ -636,6 +658,15 @@
             return task ? task.id : "";
         }
 
+        // 智能寻找当前阶段第一个【未完成】的任务，实现自动首推
+        function getFirstUncompletedTaskId() {
+            const phase = getPhase();
+            const today = getTodayDateString();
+            const todayChecked = userState.checkedTasks[today] || [];
+            const uncompletedTask = phase.tasks.find(task => !todayChecked.includes(task.id));
+            return uncompletedTask ? uncompletedTask.id : (phase.tasks[0] ? phase.tasks[0].id : "");
+        }
+
         function renderApp() {
             renderDateLabels();
             renderDashboard();
@@ -661,9 +692,7 @@
             const finished = todayChecked.filter(id => phaseTaskIds.includes(id)).length;
             const completionRate = phase.tasks.length ? Math.round((finished / phase.tasks.length) * 100) : 0;
 
-            const currentTask = getCurrentDayTask();
             document.getElementById("current-phase-badge").innerText = `三年目标 · ${phase.title}`;
-            document.getElementById("goal-title").innerText = "3年内和英语母语者正常交流";
             document.getElementById("streak-count").innerText = `${userState.streak || 0} 天`;
             const streakHead = document.getElementById("streak-count-head");
             if (streakHead) streakHead.innerText = `${userState.streak || 0} 天`;
@@ -672,12 +701,6 @@
             document.getElementById("today-minutes").innerText = getMinutesForDate(today);
             document.getElementById("week-minutes").innerText = getWeekMinutes();
             document.getElementById("time-budget-info").innerText = `约 ${phase.timeBudget}`;
-            document.getElementById("today-task-title").innerText = currentTask ? currentTask.title : "今日任务";
-            document.getElementById("today-task-desc").innerText = currentTask ? currentTask.desc : "先开始任务计时，完成后才能打卡。";
-            document.getElementById("today-task-pill").innerText = currentTask ? `${parseDurationToMinutes(currentTask.duration)} 分钟` : "打开抽屉";
-            document.getElementById("timer-status-text").innerText = currentTask ? `今天先完成「${currentTask.title}」再进入下一步。` : "今天先完成一个任务，再去看别的内容。";
-            document.getElementById("timer-current-label").innerText = currentTask ? currentTask.title : "尚未开始计时";
-            document.getElementById("completion-rate").innerText = `${completionRate}%`;
         }
 
         function renderTabs() {
@@ -697,6 +720,7 @@
             const phase = getPhase();
             const todayChecked = userState.checkedTasks[today] || [];
 
+            // 1. 动态渲染新概念清单列表
             document.getElementById("checklist-container").innerHTML = phase.tasks.map(task => {
                 const checked = todayChecked.includes(task.id);
                 const minutes = parseDurationToMinutes(task.duration);
@@ -718,8 +742,8 @@
                                 </div>
                                 <p class="mt-1.5 text-xs font-semibold leading-relaxed text-[#8c705b]">${task.desc}</p>
                                 <div class="mt-3 flex items-center justify-between gap-2">
-                                    <span class="rounded-full bg-[#fff1df] px-3 py-1.5 text-[11px] font-extrabold text-[#9a6840]">${task.duration}</span>
-                                    <span class="text-[11px] font-extrabold text-[#7a4528]">${checked ? "今日闭环完成" : proof ? "可完成打卡" : isActiveTimer ? "继续专注" : `先计时 ${minutes} 分`}</span>
+                                    <span class="rounded-full bg-[#fff1df] px-3 py-1.5 text-[11px] font-extrabold text-[#9a6840]">${task.duration} 分钟</span>
+                                    <span class="text-[11px] font-extrabold text-[#7a4528]">${checked ? "今日闭环完成" : proof ? "可完成打卡" : isActiveTimer ? "专注进行中" : `先计时 ${minutes} 分`}</span>
                                 </div>
                             </div>
                         </div>
@@ -727,26 +751,21 @@
                 `;
             }).join("");
 
+            // 2. 动态渲染路线路线对应工具（100% 咬合新概念 + 墨墨）
             const routeBox = document.getElementById("app-toolbox");
             if (routeBox) {
-                routeBox.innerHTML = `
+                routeBox.innerHTML = phase.tools.map(tool => `
                     <div class="rounded-[18px] bg-[#fffaf2] p-3 micro-shadow">
                         <div class="flex items-center justify-between gap-2">
-                            <p class="text-sm font-extrabold text-[#2f2118]">新概念英语</p>
-                            <span class="rounded-full bg-[#f3e3c9] px-2 py-1 text-[10px] font-extrabold text-[#7a4528]">输入</span>
+                            <p class="text-sm font-extrabold text-[#2f2118]">${tool.name}</p>
+                            <span class="rounded-full bg-[#f3e3c9] px-2 py-0.5 text-[10px] font-extrabold text-[#7a4528]">推荐工具</span>
                         </div>
-                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">跟读、精听、纠音，负责把英语输入做扎实。</p>
+                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">${tool.desc}</p>
                     </div>
-                    <div class="rounded-[18px] bg-[#fffaf2] p-3 micro-shadow">
-                        <div class="flex items-center justify-between gap-2">
-                            <p class="text-sm font-extrabold text-[#2f2118]">墨墨背单词</p>
-                            <span class="rounded-full bg-[#f3e3c9] px-2 py-1 text-[10px] font-extrabold text-[#7a4528]">巩固</span>
-                        </div>
-                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">维持高频复现，把记住的单词稳稳留住。</p>
-                    </div>
-                `;
+                `).join("");
             }
 
+            // 3. 同步复盘日记
             const noteInput = document.getElementById("daily-note-input");
             if (noteInput && document.activeElement !== noteInput) {
                 noteInput.value = userState.dailyNotes[today] || "";
@@ -857,14 +876,17 @@
 
         function renderSettingsNav() {
             document.querySelectorAll(".tab-page").forEach(page => page.classList.remove("active"));
-            document.getElementById(`view-${activeTab}`).classList.add("active");
+            const activePage = document.getElementById(`view-${activeTab}`);
+            if (activePage) activePage.classList.add("active");
 
             ["today", "review", "achievements", "settings"].forEach(tab => {
                 const item = document.getElementById(`nav-${tab}`);
-                const active = tab === activeTab;
-                item.classList.toggle("bg-[#fff4e3]", active);
-                item.classList.toggle("text-[#7a4528]", active);
-                item.classList.toggle("text-[#9a8a78]", !active);
+                if (item) {
+                    const active = tab === activeTab;
+                    item.classList.toggle("bg-[#fff4e3]", active);
+                    item.classList.toggle("text-[#7a4528]", active);
+                    item.classList.toggle("text-[#9a8a78]", !active);
+                }
             });
         }
 
@@ -942,7 +964,8 @@
             const actions = document.getElementById("task-sheet-actions");
             if (checked) {
                 actions.innerHTML = `
-                    <button onclick="closeTaskSheet()" class="touch-button rounded-[22px] bg-[#7a4528] text-sm font-extrabold text-white shadow-lg shadow-[#7a4528]/20">今日已完成</button>
+                    <button onclick="toggleTask('${activeTaskSheetId}')" class="touch-button rounded-[22px] bg-amber-600 text-sm font-extrabold text-white shadow-lg shadow-amber-600/20">✕ 取消今日完成标记</button>
+                    <button onclick="closeTaskSheet()" class="touch-button rounded-[22px] bg-[#fff1df] text-sm font-extrabold text-[#7a4528] micro-shadow">返回主页</button>
                 `;
             } else if (hasActiveTimer) {
                 actions.innerHTML = `
@@ -971,31 +994,29 @@
             const index = tasks.indexOf(taskId);
 
             if (index > -1) {
-                showToast("已完成的任务不会从这里撤销");
-                openTaskSheet(taskId);
-                return;
-            }
-
-            const proof = getTimerProof(taskId, today);
-            if (!proof) {
-                openTaskSheet(taskId);
-                showToast("先完成倒计时，再完成打卡");
-                return;
+                // 安全反悔：取消打卡，并为了自律铁律同步扣除已生成的计时证明（防刷完成度）
+                tasks.splice(index, 1);
+                if (userState.timerProofs && userState.timerProofs[today]) {
+                    delete userState.timerProofs[today][taskId];
+                }
+                showToast("已成功取消今日完成标记，计时证明已重置");
             } else {
-                tasks.push(taskId);
-                userState.totalClicks++;
-                if (navigator.vibrate) navigator.vibrate(30);
-                showToast(`打卡成功，已使用 ${proof.minutes} 分钟计时证明`);
+                const proof = getTimerProof(taskId, today);
+                if (!proof) {
+                    openTaskSheet(taskId);
+                    showToast("先完成倒计时，再完成打卡");
+                    return;
+                } else {
+                    tasks.push(taskId);
+                    userState.totalClicks++;
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    showToast(`打卡成功，已使用 ${proof.minutes} 分钟计时证明`);
+                }
             }
 
             updateStreakLogic();
             closeTaskSheet();
             saveState();
-        }
-
-        function addMinutesForTask(taskId) {
-            openTaskSheet(taskId);
-            showToast("任务分钟必须由倒计时完成后记录");
         }
 
         function addMinutes(dateKey, minutes, shouldSave) {
@@ -1122,11 +1143,6 @@
             return getLastNDays(7).reduce((sum, key) => sum + getMinutesForDate(key), 0);
         }
 
-        function getCurrentMonthCheckDays() {
-            const today = new Date();
-            return getMonthDateKeys(today.getFullYear(), today.getMonth()).filter(hasCheckedOnDate).length;
-        }
-
         function getMonthDateKeys(year, month) {
             const days = new Date(year, month + 1, 0).getDate();
             return Array.from({ length: days }, (_, index) => formatDateKey(new Date(year, month, index + 1)));
@@ -1140,8 +1156,8 @@
         function showDaySummary(dateKey) {
             const tasks = (userState.checkedTasks[dateKey] || []).length;
             const minutes = getMinutesForDate(dateKey);
-            const note = userState.dailyNotes[dateKey] || "没有复盘笔记";
-            showToast(`${dateKey}：${tasks}项 · ${minutes}分钟 · ${note}`);
+            const note = userState.dailyNotes[dateKey] || "今天没有写复盘笔记。";
+            showToast(`${dateKey}：已打卡 ${tasks} 项 · 专注 ${minutes} 分钟\n笔记：${note}`);
         }
 
         function restoreTimerAfterLoad() {
@@ -1175,15 +1191,10 @@
             document.getElementById("timer-status-text").innerText = timer.isRunning ? "专注进行中，保持这口气。" : timer.isPaused ? "倒计时已暂停，可以稍后继续。" : completedTaskProof ? "计时证明已生成，可以完成该任务打卡。" : "选择任务或自定义分钟，开始一段专注学习。";
 
             const pauseBtn = document.getElementById("timer-pause-btn");
-            const cancelBtn = document.getElementById("timer-cancel-btn");
             pauseBtn.disabled = !hasActiveTimer;
-            cancelBtn.disabled = !hasActiveTimer;
             pauseBtn.innerText = timer.isPaused ? "继续" : "暂停";
             pauseBtn.classList.toggle("opacity-50", !hasActiveTimer);
-            cancelBtn.classList.toggle("opacity-50", !hasActiveTimer);
 
-            const input = document.getElementById("custom-timer-minutes");
-            if (input && timer.lastPresetMinutes && document.activeElement !== input) input.value = timer.lastPresetMinutes;
             updateNotificationButton();
         }
 
@@ -1202,11 +1213,6 @@
 
         function startCustomTimer(minutes) {
             startCountdown(clampMinutes(minutes), "自定义专注学习", "");
-        }
-
-        function startTimerFromInput() {
-            const input = document.getElementById("custom-timer-minutes");
-            startCountdown(clampMinutes(input ? input.value : 25), "自定义专注学习", "");
         }
 
         function startCountdown(minutes, label, taskId) {

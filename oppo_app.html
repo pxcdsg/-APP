@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>研路英语打卡</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- App Manifest Meta for PWA-like experience -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            background-color: #fbf9f6;
+        }
+        /* Custom scrollbar for minimalist look */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .safe-bottom {
+            padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+        }
+        .timer-ring {
+            background: conic-gradient(#92400e var(--timer-progress, 0%), #f7e7cf 0);
+        }
+        .touch-button {
+            min-height: 44px;
+        }
+    </style>
+</head>
+<body class="text-gray-800 flex flex-col min-h-screen">
+
+    <!-- Top App Bar -->
+    <header class="sticky top-0 bg-white/90 backdrop-blur-md border-b border-orange-100 z-40 px-5 py-4 flex justify-between items-center">
+        <div>
+            <span class="text-xs font-semibold text-amber-700 tracking-wider uppercase block" id="current-phase-badge">第一阶段：研0暑假</span>
+            <h1 class="text-xl font-bold text-gray-900 flex items-center">
+                📚 研路英语伴侣
+            </h1>
+        </div>
+        <!-- Streak Info -->
+        <div class="bg-orange-50 px-3 py-1.5 rounded-full border border-orange-200 flex items-center space-x-1">
+            <span class="text-lg">🔥</span>
+            <span class="text-sm font-bold text-orange-800" id="streak-count">0 天</span>
+        </div>
+    </header>
+
+    <!-- Main Content Container (Scrollable) -->
+    <main class="flex-1 overflow-y-auto px-4 py-5 space-y-6 pb-24">
+        
+        <!-- Welcome Card & Global Progress -->
+        <div class="bg-gradient-to-br from-amber-800 to-amber-950 rounded-2xl p-5 text-white shadow-lg shadow-amber-900/10">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h2 class="text-lg font-bold" id="welcome-title">哈罗，未来的研究生！</h2>
+                    <p class="text-xs text-amber-200/80 mt-1">今天是你攻克“翻译脑”的坚实一步。</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-3xl font-extrabold" id="completion-rate">0%</span>
+                    <span class="text-xs block text-amber-200/80">今日进度</span>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-amber-950/40 rounded-full h-2.5 overflow-hidden">
+                <div id="progress-bar-fill" class="bg-amber-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- STAGE NAVIGATION (Horizontal Scroll) -->
+        <div class="space-y-2">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">当前学习阶段</h3>
+            <div class="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none" id="stage-tabs">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- STUDY COUNTDOWN TIMER -->
+        <div class="bg-[#fff7ed] rounded-2xl p-5 border border-orange-200 shadow-sm space-y-4">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <h3 class="text-sm font-bold text-amber-950 flex items-center">
+                        <span class="mr-1.5">⏰</span> 学习倒计时
+                    </h3>
+                    <p id="timer-status-text" class="text-xs text-amber-800/70 mt-1">选择任务或自定义分钟，开始一段专注学习。</p>
+                </div>
+                <button onclick="requestNotificationPermission()" id="notification-btn" class="touch-button px-3 py-2 rounded-xl bg-white border border-orange-200 text-[11px] font-bold text-amber-900 active:scale-95 transition-all">
+                    开启通知
+                </button>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="timer-ring h-24 w-24 rounded-full p-2 flex-shrink-0 shadow-inner" id="timer-ring" style="--timer-progress: 0%;">
+                    <div class="h-full w-full rounded-full bg-white flex flex-col items-center justify-center border border-orange-100">
+                        <span class="text-[10px] font-bold text-orange-700" id="timer-mode-label">READY</span>
+                        <span class="text-lg font-extrabold text-amber-950 tabular-nums" id="timer-time-left">00:00</span>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0 space-y-3">
+                    <div>
+                        <p class="text-[11px] text-orange-700 font-semibold">当前专注</p>
+                        <p class="text-sm font-bold text-gray-900 truncate" id="timer-current-label">尚未开始计时</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="startCustomTimer(15)" class="touch-button rounded-xl bg-white border border-orange-200 text-xs font-bold text-amber-900 active:scale-95 transition-all">15分</button>
+                        <button onclick="startCustomTimer(25)" class="touch-button rounded-xl bg-white border border-orange-200 text-xs font-bold text-amber-900 active:scale-95 transition-all">25分</button>
+                        <button onclick="startCustomTimer(45)" class="touch-button rounded-xl bg-white border border-orange-200 text-xs font-bold text-amber-900 active:scale-95 transition-all">45分</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <label class="flex-1 bg-white rounded-xl border border-orange-200 px-3 py-2">
+                    <span class="text-[10px] font-bold text-orange-700 block">自定义分钟</span>
+                    <input id="custom-timer-minutes" type="number" min="1" max="180" inputmode="numeric" class="w-full bg-transparent text-lg font-extrabold text-amber-950 outline-none" value="25">
+                </label>
+                <button onclick="startTimerFromInput()" class="touch-button w-24 rounded-xl bg-amber-800 text-white text-xs font-bold shadow-sm active:scale-95 transition-all">开始</button>
+            </div>
+
+            <div class="w-full bg-orange-100 rounded-full h-2 overflow-hidden">
+                <div id="timer-progress-fill" class="bg-amber-700 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="toggleTimerPause()" id="timer-pause-btn" class="touch-button rounded-xl bg-amber-900 text-white text-sm font-bold active:scale-95 transition-all opacity-50" disabled>暂停</button>
+                <button onclick="cancelTimer()" id="timer-cancel-btn" class="touch-button rounded-xl bg-white border border-orange-200 text-sm font-bold text-orange-800 active:scale-95 transition-all opacity-50" disabled>取消</button>
+            </div>
+        </div>
+
+        <!-- TODAY'S CHECKLIST -->
+        <div class="space-y-3">
+            <div class="flex justify-between items-center px-1">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">今日行动清单</h3>
+                <span class="text-xs text-amber-800 font-semibold" id="time-budget-info">总计: 95分钟</span>
+            </div>
+            <div id="checklist-container" class="space-y-3">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- ACHIEVEMENT BADGES -->
+        <div class="bg-white rounded-2xl p-5 border border-orange-100 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-gray-800 flex items-center">
+                <span class="mr-1.5">🏆</span> 我的英语勋章
+            </h3>
+            <div class="grid grid-cols-3 gap-3" id="badges-container">
+                <!-- Badges will be updated dynamically -->
+            </div>
+        </div>
+
+        <!-- EXCLUSIVE TOOLBOX FOR THE STAGE -->
+        <div class="bg-amber-50/50 rounded-2xl p-5 border border-amber-100/60 space-y-3">
+            <h3 class="text-sm font-bold text-amber-900 flex items-center">
+                <span class="mr-1.5">🧰</span> 当前阶段推荐工具
+            </h3>
+            <div id="app-toolbox" class="grid grid-cols-1 gap-2">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- CUSTOM TOAST NOTIFICATION -->
+    <div id="custom-toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-4 py-3 rounded-full opacity-0 pointer-events-none transition-all duration-300 shadow-lg flex items-center space-x-2 z-50">
+        <span id="toast-icon">✨</span>
+        <span id="toast-msg">打卡成功！</span>
+    </div>
+
+    <!-- BOTTOM TAB NAVIGATION (NATIVE FEEL) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-orange-100 z-40 safe-bottom">
+        <div class="flex justify-around items-center h-14 max-w-md mx-auto">
+            <button onclick="switchTab('today')" class="flex flex-col items-center justify-center w-16 text-amber-800 font-bold" id="nav-today">
+                <span class="text-xl">✅</span>
+                <span class="text-[10px] mt-0.5">每日打卡</span>
+            </button>
+            <button onclick="switchTab('stats')" class="flex flex-col items-center justify-center w-16 text-gray-400" id="nav-stats">
+                <span class="text-xl">📊</span>
+                <span class="text-[10px] mt-0.5">打卡统计</span>
+            </button>
+            <button onclick="resetApp()" class="flex flex-col items-center justify-center w-16 text-gray-400" id="nav-reset">
+                <span class="text-xl">🔄</span>
+                <span class="text-[10px] mt-0.5">重置数据</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- STATS MODAL/SECTION -->
+    <div id="stats-view" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl p-6 space-y-5 max-h-[80vh] overflow-y-auto pb-10">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">📊 学习数据中心</h3>
+                <button onclick="toggleStats(false)" class="text-gray-400 text-xl font-bold px-2">✕</button>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 text-center">
+                    <span class="text-xs text-amber-700 block mb-1">总计打卡次数</span>
+                    <span class="text-3xl font-extrabold text-amber-900" id="stat-total-clicks">0</span>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-xl border border-orange-100 text-center">
+                    <span class="text-xs text-orange-700 block mb-1">当前连续打卡</span>
+                    <span class="text-3xl font-extrabold text-orange-950" id="stat-streak">0 天</span>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">阶段解锁成就</h4>
+                <div class="border border-gray-100 rounded-xl p-4 space-y-3 text-sm text-gray-600" id="stats-achievement-list">
+                    <!-- Dynamic list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIMER DONE MODAL -->
+    <div id="timer-done-view" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-end justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl p-6 space-y-5 pb-10">
+            <div class="bg-orange-50 border border-orange-100 rounded-2xl p-5 text-center">
+                <div class="text-4xl mb-2">⏰</div>
+                <h3 class="text-xl font-extrabold text-amber-950">倒计时完成</h3>
+                <p id="timer-done-message" class="text-sm text-amber-800/80 mt-2">这一轮专注学习已经结束。</p>
+            </div>
+            <button onclick="closeTimerDoneModal()" class="touch-button w-full rounded-xl bg-amber-800 text-white text-sm font-bold active:scale-95 transition-all">我知道了</button>
+        </div>
+    </div>
+
+    <!-- JS Logic: App Data, States & Persistence -->
+    <script>
+        // 4 Phases structure aligned with user's english plan
+        const appPhases = [
+            {
+                id: "phase0",
+                name: "研0暑假",
+                title: "黄金起跑期",
+                timeBudget: "95分钟",
+                tasks: [
+                    { id: "p0_t1", title: "晨间：纠正单音发音", duration: "20分钟", desc: "赖世雄音标，发音录音对比", key: "音标" },
+                    { id: "p0_t2", title: "下午：连读弱读规律", duration: "30分钟", desc: "学习连读吞音，用ESL Pod跟读", key: "连读" },
+                    { id: "p0_t3", title: "晚间：画面背词+影子跟读", duration: "450分钟", desc: "闭眼背词脑补画面 + 听觉影子跟读", key: "影子跟读" }
+                ],
+                tools: [
+                    { name: "赖世雄美语音标", desc: "发音入门首选" },
+                    { name: "ESL Pod 播客", desc: "中慢速听力训练建立英语脑" },
+                    { name: "不背单词 APP", desc: "配合真实例句联想画面的背词利器" }
+                ]
+            },
+            {
+                id: "phase1",
+                name: "研一上",
+                title: "六级冲刺期",
+                timeBudget: "95分钟",
+                tasks: [
+                    { id: "p1_t1", title: "晨间/通勤：泛听磨耳朵", duration: "20分钟", desc: "强迫大脑只抓关键词，戒掉脑中翻译", key: "泛听" },
+                    { id: "p1_t2", title: "下午/碎片：六级核心词", duration: "15分钟", desc: "设置听音识义，消除认识但听不懂的词", key: "听音" },
+                    { id: "p1_t3", title: "晚间：真题逐句听写", duration: "60分钟", desc: "听一句写一句，标注连读纠错再大声读5遍", key: "听写" }
+                ],
+                tools: [
+                    { name: "每日英语听力 APP", desc: "支持单句循环、变速跟读" },
+                    { name: "巨微六级逐词精解", desc: "针对六级基础薄弱的真题解析" }
+                ]
+            },
+            {
+                id: "phase2",
+                name: "研一下至研二",
+                title: "思维转换期",
+                timeBudget: "90分钟",
+                tasks: [
+                    { id: "p2_t1", title: "晨间：纯英泛听（无字幕）", duration: "30分钟", desc: "第一遍裸听抓70%，第二遍看字幕补漏", key: "裸听" },
+                    { id: "p2_t2", title: "下午：语块本积累", duration: "15分钟", desc: "记文献和美剧里的完整地道词组(Chunk)", key: "语块" },
+                    { id: "p2_t3", title: "晚间：影子跟读+自言自语", duration: "45分钟", desc: "跟读美剧/TED，用英文描述当天的实验/生活", key: "自说" }
+                ],
+                tools: [
+                    { name: "All Ears English", desc: "最地道的日常沟通口语播客" },
+                    { name: "PotPlayer 播放器", desc: "电脑端双语字幕、逐句回放利器" }
+                ]
+            },
+            {
+                id: "phase3",
+                name: "研三",
+                title: "实战飞跃期",
+                timeBudget: "80分钟",
+                tasks: [
+                    { id: "p3_t1", title: "碎片时间：学术深度听力", duration: "20分钟", desc: "听科技、科研访谈，学习母语者过渡词", key: "学术听" },
+                    { id: "p3_t2", title: "晚间/周末：实战口语对话", duration: "60分钟", desc: "每周2次，用语言交换平台寻找真实语伴/外教", key: "实战口语" }
+                ],
+                tools: [
+                    { name: "HelloTalk / Tandem", desc: "寻找免费全球语伴，实时交流" },
+                    { name: "Lex Fridman Podcast", desc: "高阶科研与科技博主深度访谈" }
+                ]
+            }
+        ];
+
+        const defaultTimerState = {
+            isRunning: false,
+            isPaused: false,
+            label: "",
+            durationMs: 0,
+            remainingMs: 0,
+            startedAt: 0,
+            endsAt: 0,
+            lastPresetMinutes: 25,
+            notificationEnabled: false,
+            completedLabel: ""
+        };
+
+        let timerInterval = null;
+        let timerCompletionShown = false;
+        let timerAudioContext = null;
+
+        // App Status Store
+        let userState = {
+            currentPhaseIndex: 0,
+            checkedTasks: {}, // Format: { "YYYY-MM-DD": [task_id_1, task_id_2] }
+            streak: 0,
+            lastCheckedDate: "",
+            totalClicks: 0,
+            timer: { ...defaultTimerState }
+        };
+
+        function getTodayDateString() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function loadState() {
+            const savedState = localStorage.getItem("grad_english_app_state_2026");
+            if (savedState) {
+                try {
+                    userState = JSON.parse(savedState);
+                    if (!userState.checkedTasks) userState.checkedTasks = {};
+                    userState.timer = normalizeTimerState(userState.timer);
+                } catch(e) {
+                    console.error("Error parsing state, resetting to default");
+                }
+            }
+            updateStreakLogic();
+            restoreTimerAfterLoad();
+            renderTabs();
+            renderActivePhase();
+            renderAchievements();
+            renderTimer();
+        }
+
+        function saveState() {
+            localStorage.setItem("grad_english_app_state_2026", JSON.stringify(userState));
+            updateStreakDisplay();
+            renderAchievements();
+        }
+
+        function normalizeTimerState(timer) {
+            return {
+                ...defaultTimerState,
+                ...(timer || {})
+            };
+        }
+
+        function parseDurationToMinutes(durationText) {
+            const match = String(durationText || "").match(/\d+/);
+            if (!match) return 25;
+            return Math.max(1, parseInt(match[0], 10));
+        }
+
+        function clampMinutes(minutes) {
+            const parsed = Number(minutes);
+            if (!Number.isFinite(parsed)) return 25;
+            return Math.min(180, Math.max(1, Math.round(parsed)));
+        }
+
+        function formatTimerTime(ms) {
+            const safeMs = Math.max(0, ms || 0);
+            const totalSeconds = Math.ceil(safeMs / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateStreakLogic() {
+            const today = getTodayDateString();
+            if (!userState.lastCheckedDate) {
+                userState.streak = 0;
+                return;
+            }
+
+            const lastDate = new Date(userState.lastCheckedDate);
+            const currentDate = new Date(today);
+            const diffTime = Math.abs(currentDate - lastDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 1 && userState.lastCheckedDate !== today) {
+                // Streak broken if last check-in was more than 1 day ago
+                userState.streak = 0;
+            }
+        }
+
+        function updateStreakDisplay() {
+            document.getElementById('streak-count').innerText = `${userState.streak} 天`;
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('stage-tabs');
+            container.innerHTML = appPhases.map((phase, idx) => {
+                const isActive = idx === userState.currentPhaseIndex;
+                const activeStyle = isActive 
+                    ? 'bg-amber-800 text-white shadow-sm font-bold' 
+                    : 'bg-white text-gray-500 border border-orange-100 hover:bg-orange-50/50';
+                return `
+                    <button onclick="changePhase(${idx})" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all duration-200 ${activeStyle}">
+                        ${phase.name}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function changePhase(idx) {
+            userState.currentPhaseIndex = idx;
+            saveState();
+            renderTabs();
+            renderActivePhase();
+            showToast("🧭 已切换到：" + appPhases[idx].name);
+        }
+
+        function renderActivePhase() {
+            const today = getTodayDateString();
+            const phase = appPhases[userState.currentPhaseIndex];
+            
+            // Set header values
+            document.getElementById('current-phase-badge').innerText = `${phase.name}：${phase.title}`;
+            document.getElementById('time-budget-info').innerText = `总计约: ${phase.timeBudget}`;
+
+            // Today's completions for the current phase
+            const todayChecked = userState.checkedTasks[today] || [];
+            const phaseTaskIds = phase.tasks.map(t => t.id);
+            const finishedInPhase = todayChecked.filter(id => phaseTaskIds.includes(id)).length;
+            const completionRate = phase.tasks.length > 0 ? Math.round((finishedInPhase / phase.tasks.length) * 100) : 0;
+
+            // Update Progress UI
+            document.getElementById('completion-rate').innerText = `${completionRate}%`;
+            document.getElementById('progress-bar-fill').style.width = `${completionRate}%`;
+
+            // Render Checklist Items
+            const checklistContainer = document.getElementById('checklist-container');
+            checklistContainer.innerHTML = phase.tasks.map(task => {
+                const isChecked = todayChecked.includes(task.id);
+                const timerMinutes = parseDurationToMinutes(task.duration);
+                return `
+                    <div class="bg-white rounded-2xl p-4 border ${isChecked ? 'border-amber-300 bg-amber-50/10' : 'border-orange-100'} shadow-sm transition-all duration-150">
+                        <div onclick="toggleTask('${task.id}')" class="flex items-start active:scale-[0.99] transition-all duration-150 cursor-pointer">
+                            <div class="flex items-center justify-center h-6 w-6 rounded-full border-2 ${isChecked ? 'border-amber-700 bg-amber-800 text-white' : 'border-orange-300 bg-white'} mr-3 flex-shrink-0">
+                                ${isChecked ? '✓' : ''}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start gap-2">
+                                    <h4 class="font-bold text-sm ${isChecked ? 'text-gray-400 line-through' : 'text-gray-900'}">${task.title}</h4>
+                                    <span class="text-[10px] font-bold bg-orange-100 text-orange-800 px-2 py-0.5 rounded-md flex-shrink-0">${task.duration}</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 leading-relaxed ${isChecked ? 'text-gray-400 line-through' : ''}">${task.desc}</p>
+                            </div>
+                        </div>
+                        <button onclick="startTaskTimer('${task.id}')" class="touch-button mt-3 w-full rounded-xl bg-orange-50 border border-orange-200 text-xs font-bold text-amber-900 active:scale-[0.98] transition-all">
+                            ⏱️ 按此任务计时 · ${timerMinutes}分钟
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Render Toolboxes
+            const toolboxContainer = document.getElementById('app-toolbox');
+            toolboxContainer.innerHTML = phase.tools.map(tool => `
+                <div class="bg-white p-3.5 rounded-xl border border-amber-100/40 flex items-start space-x-2">
+                    <span class="text-sm">📌</span>
+                    <div>
+                        <h5 class="font-bold text-xs text-amber-950">${tool.name}</h5>
+                        <p class="text-[10px] text-amber-800/70 mt-0.5">${tool.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            updateStreakDisplay();
+        }
+
+        function toggleTask(taskId) {
+            const today = getTodayDateString();
+            if (!userState.checkedTasks[today]) {
+                userState.checkedTasks[today] = [];
+            }
+
+            const index = userState.checkedTasks[today].indexOf(taskId);
+            let checkInAdded = false;
+
+            if (index > -1) {
+                // Task was completed, unchecking it
+                userState.checkedTasks[today].splice(index, 1);
+                showToast("➖ 已取消此项任务");
+            } else {
+                // Checking new task
+                userState.checkedTasks[today].push(taskId);
+                userState.totalClicks++;
+                checkInAdded = true;
+                
+                // Add celebration vibration/sound mock
+                if (navigator.vibrate) navigator.vibrate(30);
+                showToast("🎉 达成此项任务，棒极了！");
+            }
+
+            // STREAK MANAGEMENT
+            // If at least one task is completed today, count/protect the streak
+            const todayChecked = userState.checkedTasks[today] || [];
+            if (todayChecked.length > 0) {
+                if (userState.lastCheckedDate !== today) {
+                    if (userState.lastCheckedDate === getYesterdayDateString()) {
+                        userState.streak++;
+                    } else if (userState.streak === 0) {
+                        userState.streak = 1;
+                    }
+                    userState.lastCheckedDate = today;
+                }
+            } else {
+                // If they unchecked everything for today, and it was checked today, reduce streak or reset last checked
+                if (userState.lastCheckedDate === today) {
+                    userState.lastCheckedDate = userState.checkedTasks[getYesterdayDateString()] ? getYesterdayDateString() : "";
+                    userState.streak = Math.max(0, userState.streak - 1);
+                }
+            }
+
+            saveState();
+            renderActivePhase();
+        }
+
+        function getYesterdayDateString() {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yyyy = yesterday.getFullYear();
+            const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+            const dd = String(yesterday.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function renderAchievements() {
+            const container = document.getElementById('badges-container');
+            const badgeList = [
+                { name: "音标专家", icon: "🎙️", condition: userState.totalClicks >= 1, desc: "解锁首个英语习惯打卡" },
+                { name: "打碎翻译脑", icon: "🧠", condition: userState.streak >= 3, desc: "连续学习达 3 天" },
+                { name: "六级终结者", icon: "🛡️", condition: userState.streak >= 7, desc: "连续打卡 7 天" },
+                { name: "自律研究生", icon: "🎓", condition: userState.totalClicks >= 15, desc: "累计打卡完成 15 项" }
+            ];
+
+            container.innerHTML = badgeList.map(badge => {
+                const isUnlocked = badge.condition;
+                return `
+                    <div class="flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${isUnlocked ? 'bg-amber-50 border-amber-200 opacity-100' : 'bg-gray-50 border-gray-100 opacity-40'}">
+                        <span class="text-2xl">${isUnlocked ? badge.icon : '🔒'}</span>
+                        <span class="text-[10px] font-bold text-gray-800 mt-1.5 block">${badge.name}</span>
+                        <span class="text-[8px] text-gray-400 mt-0.5 block">${badge.desc}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // For Modal View list
+            const modalList = document.getElementById('stats-achievement-list');
+            modalList.innerHTML = badgeList.map(b => `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span>${b.condition ? b.icon : '🔒'}</span>
+                        <div>
+                            <p class="font-bold text-xs ${b.condition ? 'text-gray-800' : 'text-gray-400'}">${b.name}</p>
+                            <p class="text-[9px] text-gray-400">${b.desc}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-bold ${b.condition ? 'text-green-600' : 'text-gray-400'}">${b.condition ? '已解锁' : '未解锁'}</span>
+                </div>
+            `).join('<hr class="border-gray-50 my-2">');
+        }
+
+        function restoreTimerAfterLoad() {
+            userState.timer = normalizeTimerState(userState.timer);
+            if (userState.timer.isRunning && !userState.timer.isPaused) {
+                const remaining = userState.timer.endsAt - Date.now();
+                if (remaining <= 0) {
+                    userState.timer.remainingMs = 0;
+                    userState.timer.isRunning = false;
+                    userState.timer.isPaused = false;
+                    userState.timer.completedLabel = userState.timer.label || "学习倒计时";
+                    timerCompletionShown = true;
+                } else {
+                    userState.timer.remainingMs = remaining;
+                    startTimerLoop();
+                }
+            }
+        }
+
+        function renderTimer() {
+            const timer = normalizeTimerState(userState.timer);
+            const ring = document.getElementById('timer-ring');
+            const timeLeft = document.getElementById('timer-time-left');
+            const modeLabel = document.getElementById('timer-mode-label');
+            const currentLabel = document.getElementById('timer-current-label');
+            const statusText = document.getElementById('timer-status-text');
+            const progressFill = document.getElementById('timer-progress-fill');
+            const pauseBtn = document.getElementById('timer-pause-btn');
+            const cancelBtn = document.getElementById('timer-cancel-btn');
+            const input = document.getElementById('custom-timer-minutes');
+
+            const hasActiveTimer = timer.isRunning || timer.isPaused;
+            const remainingMs = getCurrentRemainingMs();
+            const progress = timer.durationMs > 0 ? Math.min(100, Math.max(0, ((timer.durationMs - remainingMs) / timer.durationMs) * 100)) : 0;
+
+            timeLeft.innerText = formatTimerTime(hasActiveTimer ? remainingMs : 0);
+            ring.style.setProperty('--timer-progress', `${progress}%`);
+            progressFill.style.width = `${progress}%`;
+            currentLabel.innerText = hasActiveTimer ? timer.label : (timer.completedLabel ? `已完成：${timer.completedLabel}` : "尚未开始计时");
+            modeLabel.innerText = timer.isRunning ? "FOCUS" : (timer.isPaused ? "PAUSED" : "READY");
+            statusText.innerText = timer.isRunning
+                ? "专注进行中，保持这口气。"
+                : timer.isPaused
+                    ? "倒计时已暂停，可以稍后继续。"
+                    : timer.completedLabel
+                        ? "上一轮学习已完成，可以开启下一轮。"
+                        : "选择任务或自定义分钟，开始一段专注学习。";
+
+            pauseBtn.disabled = !hasActiveTimer;
+            cancelBtn.disabled = !hasActiveTimer;
+            pauseBtn.innerText = timer.isPaused ? "继续" : "暂停";
+            pauseBtn.classList.toggle('opacity-50', !hasActiveTimer);
+            cancelBtn.classList.toggle('opacity-50', !hasActiveTimer);
+
+            if (input && timer.lastPresetMinutes && document.activeElement !== input) {
+                input.value = timer.lastPresetMinutes;
+            }
+
+            updateNotificationButton();
+        }
+
+        function getCurrentRemainingMs() {
+            const timer = normalizeTimerState(userState.timer);
+            if (timer.isPaused) return Math.max(0, timer.remainingMs || 0);
+            if (timer.isRunning) return Math.max(0, (timer.endsAt || 0) - Date.now());
+            return Math.max(0, timer.remainingMs || 0);
+        }
+
+        function startTaskTimer(taskId) {
+            const phase = appPhases[userState.currentPhaseIndex];
+            const task = phase.tasks.find(item => item.id === taskId);
+            if (!task) return;
+            const minutes = parseDurationToMinutes(task.duration);
+            startCountdown(minutes, task.title);
+        }
+
+        function startCustomTimer(minutes) {
+            startCountdown(clampMinutes(minutes), "自定义专注学习");
+        }
+
+        function startTimerFromInput() {
+            const input = document.getElementById('custom-timer-minutes');
+            const minutes = clampMinutes(input ? input.value : 25);
+            startCountdown(minutes, "自定义专注学习");
+        }
+
+        function startCountdown(minutes, label) {
+            const safeMinutes = Math.max(1, Math.round(Number(minutes) || 25));
+            const durationMs = safeMinutes * 60 * 1000;
+            const now = Date.now();
+
+            userState.timer = {
+                ...normalizeTimerState(userState.timer),
+                isRunning: true,
+                isPaused: false,
+                label,
+                durationMs,
+                remainingMs: durationMs,
+                startedAt: now,
+                endsAt: now + durationMs,
+                lastPresetMinutes: safeMinutes,
+                completedLabel: ""
+            };
+
+            timerCompletionShown = false;
+            primeTimerSound();
+            saveState();
+            startTimerLoop();
+            renderTimer();
+            showToast(`⏱️ 已开始：${label}`);
+        }
+
+        function startTimerLoop() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimerTick, 1000);
+            updateTimerTick();
+        }
+
+        function updateTimerTick() {
+            if (!userState.timer || !userState.timer.isRunning || userState.timer.isPaused) {
+                renderTimer();
+                return;
+            }
+
+            const remaining = getCurrentRemainingMs();
+            userState.timer.remainingMs = remaining;
+
+            if (remaining <= 0) {
+                finishTimer();
+                return;
+            }
+
+            localStorage.setItem("grad_english_app_state_2026", JSON.stringify(userState));
+            renderTimer();
+        }
+
+        function finishTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            const finishedLabel = userState.timer.label || "学习倒计时";
+            userState.timer = {
+                ...normalizeTimerState(userState.timer),
+                isRunning: false,
+                isPaused: false,
+                remainingMs: 0,
+                completedLabel: finishedLabel
+            };
+
+            saveState();
+            renderTimer();
+
+            if (!timerCompletionShown) {
+                timerCompletionShown = true;
+                triggerTimerAlerts(finishedLabel);
+            }
+        }
+
+        function triggerTimerAlerts(label) {
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            playTimerSound();
+            sendTimerNotification(label);
+            showTimerDoneModal(label);
+            showToast("⏰ 倒计时完成，休息一下吧！");
+        }
+
+        function toggleTimerPause() {
+            const timer = normalizeTimerState(userState.timer);
+            if (!timer.isRunning && !timer.isPaused) return;
+
+            if (timer.isPaused) {
+                const now = Date.now();
+                const remaining = Math.max(1000, timer.remainingMs || timer.durationMs);
+                userState.timer.isRunning = true;
+                userState.timer.isPaused = false;
+                userState.timer.startedAt = now;
+                userState.timer.endsAt = now + remaining;
+                userState.timer.remainingMs = remaining;
+                startTimerLoop();
+                showToast("▶️ 倒计时继续");
+            } else {
+                userState.timer.remainingMs = getCurrentRemainingMs();
+                userState.timer.isRunning = false;
+                userState.timer.isPaused = true;
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                showToast("⏸️ 倒计时已暂停");
+            }
+
+            saveState();
+            renderTimer();
+        }
+
+        function cancelTimer() {
+            if (!userState.timer.isRunning && !userState.timer.isPaused) return;
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            userState.timer = {
+                ...defaultTimerState,
+                lastPresetMinutes: userState.timer.lastPresetMinutes,
+                notificationEnabled: userState.timer.notificationEnabled
+            };
+
+            saveState();
+            renderTimer();
+            showToast("🛑 倒计时已取消");
+        }
+
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                userState.timer.notificationEnabled = false;
+                saveState();
+                renderTimer();
+                showToast("当前浏览器不支持系统通知");
+                return;
+            }
+
+            if (Notification.permission === "granted") {
+                userState.timer.notificationEnabled = true;
+                saveState();
+                renderTimer();
+                showToast("🔔 系统通知已开启");
+                return;
+            }
+
+            if (Notification.permission === "denied") {
+                userState.timer.notificationEnabled = false;
+                saveState();
+                renderTimer();
+                showToast("通知权限已被拒绝，可在浏览器设置中开启");
+                return;
+            }
+
+            Notification.requestPermission().then(permission => {
+                userState.timer.notificationEnabled = permission === "granted";
+                saveState();
+                renderTimer();
+                showToast(permission === "granted" ? "🔔 系统通知已开启" : "将使用页面内提醒");
+            });
+        }
+
+        function updateNotificationButton() {
+            const btn = document.getElementById('notification-btn');
+            if (!btn) return;
+
+            if (!("Notification" in window)) {
+                btn.innerText = "页面提醒";
+                btn.classList.add('opacity-70');
+                return;
+            }
+
+            if (Notification.permission === "granted" || userState.timer.notificationEnabled) {
+                btn.innerText = "通知已开";
+                btn.classList.remove('opacity-70');
+                return;
+            }
+
+            if (Notification.permission === "denied") {
+                btn.innerText = "通知受限";
+                btn.classList.add('opacity-70');
+                return;
+            }
+
+            btn.innerText = "开启通知";
+            btn.classList.remove('opacity-70');
+        }
+
+        function sendTimerNotification(label) {
+            if (!("Notification" in window)) return;
+            if (!userState.timer.notificationEnabled && Notification.permission !== "granted") return;
+            if (Notification.permission !== "granted") return;
+
+            try {
+                new Notification("研路英语倒计时完成", {
+                    body: `${label} 已结束，记得完成打卡。`,
+                    tag: "grad-english-timer"
+                });
+            } catch (error) {
+                console.warn("Notification failed", error);
+            }
+        }
+
+        function playTimerSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const audioCtx = timerAudioContext || new AudioContext();
+                if (audioCtx.state === "suspended") audioCtx.resume();
+                const now = audioCtx.currentTime;
+                [0, 0.18, 0.36].forEach(offset => {
+                    const oscillator = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    oscillator.type = "sine";
+                    oscillator.frequency.setValueAtTime(720, now + offset);
+                    gain.gain.setValueAtTime(0.0001, now + offset);
+                    gain.gain.exponentialRampToValueAtTime(0.22, now + offset + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.13);
+                    oscillator.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    oscillator.start(now + offset);
+                    oscillator.stop(now + offset + 0.14);
+                });
+            } catch (error) {
+                console.warn("Timer sound failed", error);
+            }
+        }
+
+        function primeTimerSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                if (!timerAudioContext) timerAudioContext = new AudioContext();
+                if (timerAudioContext.state === "suspended") timerAudioContext.resume();
+            } catch (error) {
+                console.warn("Timer sound prime failed", error);
+            }
+        }
+
+        function showTimerDoneModal(label) {
+            const modal = document.getElementById('timer-done-view');
+            const message = document.getElementById('timer-done-message');
+            message.innerText = `${label} 已完成，可以休息一下，或者把这一项打卡收下。`;
+            modal.classList.remove('hidden');
+        }
+
+        function closeTimerDoneModal() {
+            document.getElementById('timer-done-view').classList.add('hidden');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2000);
+        }
+
+        function switchTab(tab) {
+            const navToday = document.getElementById('nav-today');
+            const navStats = document.getElementById('nav-stats');
+
+            if (tab === 'today') {
+                navToday.classList.add('text-amber-800', 'font-bold');
+                navToday.classList.remove('text-gray-400');
+                navStats.classList.add('text-gray-400');
+                navStats.classList.remove('text-amber-800', 'font-bold');
+                toggleStats(false);
+            } else if (tab === 'stats') {
+                navStats.classList.add('text-amber-800', 'font-bold');
+                navStats.classList.remove('text-gray-400');
+                navToday.classList.add('text-gray-400');
+                navToday.classList.remove('text-amber-800', 'font-bold');
+                
+                // Update stats fields before showing modal
+                document.getElementById('stat-total-clicks').innerText = userState.totalClicks;
+                document.getElementById('stat-streak').innerText = `${userState.streak} 天`;
+                toggleStats(true);
+            }
+        }
+
+        function toggleStats(show) {
+            const modal = document.getElementById('stats-view');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+                // Switch tab visual focus back to today
+                document.getElementById('nav-today').classList.add('text-amber-800', 'font-bold');
+                document.getElementById('nav-today').classList.remove('text-gray-400');
+                document.getElementById('nav-stats').classList.add('text-gray-400');
+                document.getElementById('nav-stats').classList.remove('text-amber-800', 'font-bold');
+            }
+        }
+
+        function resetApp() {
+            if (confirm("⚠️ 确定要重置所有打卡历史和连续打卡天数吗？此操作无法撤销。")) {
+                localStorage.removeItem("grad_english_app_state_2026");
+                userState = {
+                    currentPhaseIndex: 0,
+                    checkedTasks: {},
+                    streak: 0,
+                    lastCheckedDate: "",
+                    totalClicks: 0,
+                    timer: { ...defaultTimerState }
+                };
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                saveState();
+                renderTabs();
+                renderActivePhase();
+                renderAchievements();
+                renderTimer();
+                showToast("🔄 数据已成功重置！");
+            }
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            loadState();
+        };
+    </script>
+</body>
+</html>

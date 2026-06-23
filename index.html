@@ -187,7 +187,7 @@
         <header class="glass-bar safe-top sticky top-0 z-40 border-b px-5 pb-3">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-bold tracking-[0.18em] uppercase text-[#9a6840]" id="current-phase-badge">研0暑假 · 黄金起跑期</p>
+                    <p class="text-[11px] font-bold tracking-[0.18em] uppercase text-[#9a6840]" id="current-phase-badge">三年英语计划</p>
                     <h1 class="mt-1 text-[22px] font-extrabold tracking-tight text-[#2f2118]">研路英语打卡</h1>
                 </div>
                 <div class="rounded-2xl bg-[#fff7ea] px-3 py-2 text-right micro-shadow">
@@ -198,67 +198,86 @@
         </header>
 
         <main class="px-4 pb-32 pt-4">
-            <section id="view-today" class="tab-page active space-y-5">
-                <div class="dark-card rounded-[28px] p-5">
+            <section id="view-today" class="tab-page active space-y-4">
+                <div class="dark-card overflow-hidden rounded-[30px] p-5">
                     <div class="flex items-start justify-between gap-4">
                         <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-[#f3d6ab]" id="today-date-label">今天</p>
-                            <h2 class="mt-2 text-2xl font-extrabold leading-tight" id="welcome-title">今天稳稳推进一小步</h2>
-                            <p class="mt-2 text-xs leading-relaxed text-[#edd6b7]/80">完成任务、记录分钟、月底回看，你会看到自己真的在变强。</p>
+                            <p class="text-[11px] font-bold tracking-[0.16em] text-[#f3d6ab]" id="today-date-label">今天</p>
+                            <h2 class="mt-2 text-[26px] font-extrabold leading-[1.08] tracking-tight" id="goal-title">3年内和英语母语者正常交流</h2>
+                            <p class="mt-2 max-w-[18rem] text-[12px] leading-relaxed text-[#edd6b7]/82">用新概念英语打输入，用墨墨背单词固化记忆，把每天的学习收进一个更稳的节奏里。</p>
                         </div>
                         <div class="shrink-0 text-right">
-                            <p class="text-4xl font-extrabold tabular-nums" id="completion-rate">0%</p>
-                            <p class="text-[10px] font-bold text-[#f3d6ab]">今日完成</p>
+                            <p class="text-[11px] font-semibold text-[#f3d6ab]">今日完成</p>
+                            <p class="mt-1 text-[40px] font-extrabold tabular-nums leading-none" id="completion-rate">0%</p>
                         </div>
                     </div>
-                    <div class="mt-5 h-3 overflow-hidden rounded-full bg-black/20">
+                    <div class="mt-4 grid grid-cols-3 gap-2">
+                        <div class="rounded-[20px] bg-white/10 p-3">
+                            <p class="text-[10px] font-semibold text-[#f3d6ab]">今日分钟</p>
+                            <p class="mt-1 text-[17px] font-extrabold tabular-nums" id="today-minutes">0</p>
+                        </div>
+                        <div class="rounded-[20px] bg-white/10 p-3">
+                            <p class="text-[10px] font-semibold text-[#f3d6ab]">连续天数</p>
+                            <p class="mt-1 text-[17px] font-extrabold tabular-nums" id="streak-count-head">0 天</p>
+                        </div>
+                        <div class="rounded-[20px] bg-white/10 p-3">
+                            <p class="text-[10px] font-semibold text-[#f3d6ab]">本周分钟</p>
+                            <p class="mt-1 text-[17px] font-extrabold tabular-nums" id="week-minutes">0</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 h-2 overflow-hidden rounded-full bg-black/20">
                         <div id="progress-bar-fill" class="h-full rounded-full bg-[#e8b56f] transition-all duration-500" style="width: 0%"></div>
                     </div>
-                    <div class="mt-5 grid grid-cols-3 gap-2">
-                        <div class="rounded-2xl bg-white/9 p-3">
-                            <p class="text-[10px] font-semibold text-[#f3d6ab]">今日分钟</p>
-                            <p class="mt-1 text-lg font-extrabold" id="today-minutes">0</p>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="openTaskSheet(getCurrentDayTaskId())" class="touch-button flex-1 rounded-2xl bg-[#fff7ea] text-sm font-extrabold text-[#6f3d22] micro-shadow">今日任务</button>
+                        <button onclick="switchTab('review')" class="touch-button w-24 rounded-2xl bg-[#7a4528] text-sm font-extrabold text-white shadow-lg shadow-[#7a4528]/20">复盘</button>
+                    </div>
+                </div>
+
+                <div class="premium-card rounded-[26px] p-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[11px] font-extrabold tracking-[0.16em] text-[#9a6840]">LEARNING PATH</p>
+                            <h3 class="mt-1 text-lg font-extrabold text-[#2f2118]">学习路线</h3>
                         </div>
-                        <div class="rounded-2xl bg-white/9 p-3">
-                            <p class="text-[10px] font-semibold text-[#f3d6ab]">本周分钟</p>
-                            <p class="mt-1 text-lg font-extrabold" id="week-minutes">0</p>
+                        <span class="rounded-full bg-[#fff1df] px-3 py-1 text-[10px] font-extrabold text-[#9a6840]" id="time-budget-info">约 95 分钟</span>
+                    </div>
+                    <div class="mt-3 grid gap-2">
+                        <div class="rounded-[18px] bg-[#fffaf2] p-3 micro-shadow">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-sm font-extrabold text-[#2f2118]">新概念英语</p>
+                                <span class="rounded-full bg-[#f3e3c9] px-2 py-1 text-[10px] font-extrabold text-[#7a4528]">输入</span>
+                            </div>
+                            <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">跟读、精听、纠音，负责把英语输入做扎实。</p>
                         </div>
-                        <div class="rounded-2xl bg-white/9 p-3">
-                            <p class="text-[10px] font-semibold text-[#f3d6ab]">本月打卡</p>
-                            <p class="mt-1 text-lg font-extrabold" id="month-check-days">0</p>
+                        <div class="rounded-[18px] bg-[#fffaf2] p-3 micro-shadow">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-sm font-extrabold text-[#2f2118]">墨墨背单词</p>
+                                <span class="rounded-full bg-[#f3e3c9] px-2 py-1 text-[10px] font-extrabold text-[#7a4528]">巩固</span>
+                            </div>
+                            <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">维持高频复现，把记住的单词稳稳留住。</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between px-1">
-                        <h3 class="text-xs font-extrabold tracking-[0.16em] text-[#9a6840]">学习阶段</h3>
-                        <span class="text-[11px] font-bold text-[#8c705b]" id="time-budget-info">约 95 分钟</span>
-                    </div>
-                    <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" id="stage-tabs"></div>
-                </div>
-
-                <div class="premium-card rounded-[24px] p-4">
+                <div class="premium-card rounded-[26px] p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <h3 class="text-base font-extrabold text-[#2f2118]">学习倒计时</h3>
-                            <p id="timer-status-text" class="mt-1 text-xs leading-relaxed text-[#8c705b]">选择任务或自定义分钟，开始一段专注学习。</p>
+                            <h3 class="text-base font-extrabold text-[#2f2118]">今日任务入口</h3>
+                            <p id="timer-status-text" class="mt-1 text-xs leading-relaxed text-[#8c705b]">点开任务抽屉，先计时，再打卡。</p>
                         </div>
-                        <button onclick="requestNotificationPermission()" id="notification-btn" class="touch-button rounded-2xl bg-white px-3 text-[11px] font-extrabold text-[#7a4528] micro-shadow">开启通知</button>
+                        <button onclick="requestNotificationPermission()" id="notification-btn" class="touch-button rounded-2xl bg-white px-3 text-[11px] font-extrabold text-[#7a4528] micro-shadow">通知</button>
                     </div>
-
                     <div class="mt-4 flex items-center gap-4">
-                        <div class="timer-ring h-24 w-24 shrink-0 rounded-full p-2" id="timer-ring" style="--timer-progress: 0%;">
+                        <div class="timer-ring h-22 w-22 shrink-0 rounded-full p-2" id="timer-ring" style="--timer-progress: 0%;">
                             <div class="flex h-full w-full flex-col items-center justify-center rounded-full bg-[#fffaf2] shadow-inner">
                                 <span class="text-[10px] font-extrabold text-[#a35f35]" id="timer-mode-label">READY</span>
-                                <span class="text-lg font-extrabold tabular-nums text-[#2f2118]" id="timer-time-left">00:00</span>
+                                <span class="text-[15px] font-extrabold tabular-nums text-[#2f2118]" id="timer-time-left">00:00</span>
                             </div>
                         </div>
-                        <div class="min-w-0 flex-1 space-y-3">
-                            <div>
-                                <p class="text-[11px] font-bold text-[#a35f35]">当前专注</p>
-                                <p class="truncate text-sm font-extrabold text-[#2f2118]" id="timer-current-label">尚未开始计时</p>
-                            </div>
+                        <div class="min-w-0 flex-1 space-y-2">
+                            <p class="truncate text-sm font-extrabold text-[#2f2118]" id="timer-current-label">尚未开始计时</p>
+                            <p class="text-xs font-semibold leading-relaxed text-[#8c705b]">今天先完成一个任务，再去看别的内容。</p>
                             <div class="grid grid-cols-3 gap-2">
                                 <button onclick="startCustomTimer(15)" class="touch-button rounded-2xl bg-[#fffaf2] text-xs font-extrabold text-[#6f3d22] micro-shadow">15分</button>
                                 <button onclick="startCustomTimer(25)" class="touch-button rounded-2xl bg-[#fffaf2] text-xs font-extrabold text-[#6f3d22] micro-shadow">25分</button>
@@ -266,45 +285,18 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="mt-4 flex gap-2">
-                        <label class="flex-1 rounded-2xl bg-[#fffaf2] px-3 py-2 micro-shadow">
-                            <span class="block text-[10px] font-extrabold text-[#9a6840]">自定义分钟</span>
-                            <input id="custom-timer-minutes" type="number" min="1" max="180" inputmode="numeric" class="w-full bg-transparent text-lg font-extrabold text-[#2f2118] outline-none" value="25">
-                        </label>
-                        <button onclick="startTimerFromInput()" class="touch-button w-24 rounded-2xl bg-[#7a4528] text-xs font-extrabold text-white shadow-lg shadow-[#7a4528]/20 active:scale-95">开始</button>
-                    </div>
-
-                    <div class="mt-4 h-2 overflow-hidden rounded-full bg-[#ead6bd]">
-                        <div id="timer-progress-fill" class="h-full rounded-full bg-[#a35f35] transition-all duration-300" style="width: 0%"></div>
-                    </div>
-
-                    <div class="mt-4 grid grid-cols-2 gap-2">
-                        <button onclick="toggleTimerPause()" id="timer-pause-btn" class="touch-button rounded-2xl bg-[#5d331d] text-sm font-extrabold text-white opacity-50 active:scale-95" disabled>暂停</button>
-                        <button onclick="cancelTimer()" id="timer-cancel-btn" class="touch-button rounded-2xl bg-[#fffaf2] text-sm font-extrabold text-[#7a4528] opacity-50 micro-shadow active:scale-95" disabled>取消</button>
-                    </div>
                 </div>
 
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between px-1">
-                        <h3 class="text-xs font-extrabold tracking-[0.16em] text-[#9a6840]">今日行动清单</h3>
-                        <span class="text-[11px] font-bold text-[#8c705b]" id="today-task-count">0/0</span>
+                <button onclick="openTaskSheet(getCurrentDayTaskId())" class="task-card app-card-press premium-card w-full rounded-[26px] p-4 text-left">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-[11px] font-extrabold tracking-[0.16em] text-[#9a6840]">TODAY TASK</p>
+                            <h3 class="mt-1 text-base font-extrabold text-[#2f2118]" id="today-task-title">今日任务</h3>
+                            <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]" id="today-task-desc">先开始任务计时，完成后才能打卡。</p>
+                        </div>
+                        <span id="today-task-pill" class="shrink-0 rounded-full bg-[#fff1df] px-3 py-1 text-[10px] font-extrabold text-[#9a6840]">打开抽屉</span>
                     </div>
-                    <div id="checklist-container" class="space-y-3"></div>
-                </div>
-
-                <div class="premium-card rounded-[24px] p-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-base font-extrabold text-[#2f2118]">今日复盘</h3>
-                        <span class="text-[11px] font-bold text-[#9a6840]">写一句就好</span>
-                    </div>
-                    <textarea id="daily-note-input" oninput="saveDailyNote()" rows="3" maxlength="120" placeholder="今天最卡的地方、最有进步的一点..." class="mt-3 w-full resize-none rounded-2xl border border-[#ead6bd] bg-[#fffaf2] p-3 text-sm font-semibold leading-relaxed text-[#2f2118] outline-none placeholder:text-[#b69a7d]"></textarea>
-                </div>
-
-                <div class="premium-card rounded-[24px] p-4">
-                    <h3 class="text-base font-extrabold text-[#2f2118]">当前阶段推荐工具</h3>
-                    <div id="app-toolbox" class="mt-3 grid gap-2"></div>
-                </div>
+                </button>
             </section>
 
             <section id="view-review" class="tab-page space-y-5">
@@ -634,6 +626,16 @@
             return appPhases[userState.currentPhaseIndex] || appPhases[0];
         }
 
+        function getCurrentDayTask() {
+            const phase = getPhase();
+            return phase.tasks[0] || null;
+        }
+
+        function getCurrentDayTaskId() {
+            const task = getCurrentDayTask();
+            return task ? task.id : "";
+        }
+
         function renderApp() {
             renderDateLabels();
             renderDashboard();
@@ -659,16 +661,23 @@
             const finished = todayChecked.filter(id => phaseTaskIds.includes(id)).length;
             const completionRate = phase.tasks.length ? Math.round((finished / phase.tasks.length) * 100) : 0;
 
-            document.getElementById("current-phase-badge").innerText = `${phase.name} · ${phase.title}`;
+            const currentTask = getCurrentDayTask();
+            document.getElementById("current-phase-badge").innerText = `三年目标 · ${phase.title}`;
+            document.getElementById("goal-title").innerText = "3年内和英语母语者正常交流";
             document.getElementById("streak-count").innerText = `${userState.streak || 0} 天`;
+            const streakHead = document.getElementById("streak-count-head");
+            if (streakHead) streakHead.innerText = `${userState.streak || 0} 天`;
             document.getElementById("completion-rate").innerText = `${completionRate}%`;
             document.getElementById("progress-bar-fill").style.width = `${completionRate}%`;
             document.getElementById("today-minutes").innerText = getMinutesForDate(today);
             document.getElementById("week-minutes").innerText = getWeekMinutes();
-            document.getElementById("month-check-days").innerText = getCurrentMonthCheckDays();
-            document.getElementById("today-task-count").innerText = `${finished}/${phase.tasks.length}`;
             document.getElementById("time-budget-info").innerText = `约 ${phase.timeBudget}`;
-            document.getElementById("welcome-title").innerText = completionRate === 100 ? "今天的英语闭环已经完成" : "今天稳稳推进一小步";
+            document.getElementById("today-task-title").innerText = currentTask ? currentTask.title : "今日任务";
+            document.getElementById("today-task-desc").innerText = currentTask ? currentTask.desc : "先开始任务计时，完成后才能打卡。";
+            document.getElementById("today-task-pill").innerText = currentTask ? `${parseDurationToMinutes(currentTask.duration)} 分钟` : "打开抽屉";
+            document.getElementById("timer-status-text").innerText = currentTask ? `今天先完成「${currentTask.title}」再进入下一步。` : "今天先完成一个任务，再去看别的内容。";
+            document.getElementById("timer-current-label").innerText = currentTask ? currentTask.title : "尚未开始计时";
+            document.getElementById("completion-rate").innerText = `${completionRate}%`;
         }
 
         function renderTabs() {
@@ -718,12 +727,25 @@
                 `;
             }).join("");
 
-            document.getElementById("app-toolbox").innerHTML = phase.tools.map(tool => `
-                <div class="rounded-2xl bg-[#fffaf2] p-3 micro-shadow">
-                    <p class="text-sm font-extrabold text-[#2f2118]">${tool.name}</p>
-                    <p class="mt-1 text-xs font-semibold text-[#8c705b]">${tool.desc}</p>
-                </div>
-            `).join("");
+            const routeBox = document.getElementById("app-toolbox");
+            if (routeBox) {
+                routeBox.innerHTML = `
+                    <div class="rounded-[18px] bg-[#fffaf2] p-3 micro-shadow">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-sm font-extrabold text-[#2f2118]">新概念英语</p>
+                            <span class="rounded-full bg-[#f3e3c9] px-2 py-1 text-[10px] font-extrabold text-[#7a4528]">输入</span>
+                        </div>
+                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">跟读、精听、纠音，负责把英语输入做扎实。</p>
+                    </div>
+                    <div class="rounded-[18px] bg-[#fffaf2] p-3 micro-shadow">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-sm font-extrabold text-[#2f2118]">墨墨背单词</p>
+                            <span class="rounded-full bg-[#f3e3c9] px-2 py-1 text-[10px] font-extrabold text-[#7a4528]">巩固</span>
+                        </div>
+                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#8c705b]">维持高频复现，把记住的单词稳稳留住。</p>
+                    </div>
+                `;
+            }
 
             const noteInput = document.getElementById("daily-note-input");
             if (noteInput && document.activeElement !== noteInput) {
